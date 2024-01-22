@@ -6,26 +6,30 @@ class Ship:
         self.obj=ai.obj
         self.screen_rect=ai.screen.get_rect()
         self.image=pygame.image.load('C:\\Users\\User\\Desktop\\Python\\Alien_Invasion\\images\\Rocket-147466_1280-_1_.bmp')
-        self.image_rect=self.image.get_rect()
-        self.image_rect.midbottom=self.screen_rect.midbottom
-        self.x=float(self.image_rect.x)
-        self.y=float(self.image_rect.y)
+        self.rect=self.image.get_rect()
+        self.rect.midbottom=self.screen_rect.midbottom
+        self.x=float(self.rect.x)
+        self.y=float(self.rect.y)
         self.right=False
         self.left=False
         self.up=False
         self.down=False
       
     def update(self):
-        if self.right and self.image_rect.right<self.screen_rect.right:
+        if self.right and self.rect.right<self.screen_rect.right:
             self.x+=self.obj.ship_speed
-        if self.left and self.image_rect.left>0:
+        if self.left and self.rect.left>0:
             self.x-=self.obj.ship_speed
-        if self.up and self.image_rect.top>0:
+        if self.up and self.rect.top>0:
             self.y-=self.obj.ship_speed
-        if self.down and self.image_rect.bottom<self.screen_rect.bottom:
+        if self.down and self.rect.bottom<self.screen_rect.bottom:
             self.y+=self.obj.ship_speed
-        self.image_rect.x=self.x
-        self.image_rect.y=self.y
+        self.rect.x=self.x
+        self.rect.y=self.y
         
     def blitme(self):
-        self.screen.blit(self.image, self.image_rect)
+        self.screen.blit(self.image, self.rect)
+        
+    def center_ship(self):
+        self.rect.midbottom=self.screen_rect.midbottom
+         
