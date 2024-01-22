@@ -6,6 +6,7 @@ from game_stats import GameStats
 from ship import Ship
 from bullet import Bullet
 from alien import Alien
+from button import Button
 
 class AlienInvasion:
     def __init__(self):
@@ -21,6 +22,7 @@ class AlienInvasion:
         self.bullets=pygame.sprite.Group()
         self.aliens=pygame.sprite.Group()
         self._create_fleet()
+        self.play_button=Button(self, 'Play')
         
     def run_game(self):
         while True:
@@ -39,6 +41,9 @@ class AlienInvasion:
                     self._key_down_controller(event)
                 elif event.type==pygame.KEYUP:
                     self._key_up_controller(event)
+                elif event.type==pygame.MOUSEBUTTONDOWN:
+                    mouse_pose=pygame.mouse.get_pos()
+                    self._check_mouse_button(mouse_pose)
  
     def _key_up_controller(self, event):
         if event.key==pygame.K_RIGHT:
@@ -68,7 +73,16 @@ class AlienInvasion:
         if self.obj.bullets_allowed>len(self.bullets):
             self.bullet=Bullet(self)  
             self.bullets.add(self.bullet)
-            
+    
+    def _check_mouse_button(self, mouse_pose):
+        if self.play_button.rect.collidepoint(mouse_pose):
+            self.stats.reset_stats()
+            self.stats.game_active=True
+            self.bullets.empty()
+            self.aliens.empty()
+            self._create_fleet()
+            self.ship.center_ship()
+           
     def _update_bullets(self):
         self.bullets.update()
         for bullet in self.bullets.copy():
@@ -101,6 +115,7 @@ class AlienInvasion:
             self.bullets.empty()
             self._create_fleet()
             self.ship.center_ship()
+            sleep(0.5)
         else:
             self.stats.game_active=False
             self.ship.center_ship()
@@ -143,6 +158,8 @@ class AlienInvasion:
         for bullet in self.bullets.sprites():
             bullet.draw_bullet()
         self.aliens.draw(self.screen)
+        if not self.stats.game_active:
+            self.play_button.draw_buttons()
         pygame.display.flip()
         
 if __name__=='__main__':
