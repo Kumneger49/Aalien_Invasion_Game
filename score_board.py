@@ -31,8 +31,8 @@ class ScoreBoard:
         self.str=str(f'High score: {self.stats.high_score}')
         self.image_high_score=self.font.render(self.str, True, self.text_color, self.settings.bg_color)
         self.high_score_image_rect=self.image_high_score.get_rect()
-        self.high_score_image_rect.centerx=self.screen_rect.centerx
-        self.high_score_image_rect.top=self.image_rect.top
+        self.high_score_image_rect.left=self.screen_rect.left+20
+        self.high_score_image_rect.top=20
         
     def check_high_score(self):
         if self.stats.score>int(self.stats.high_score):
@@ -60,5 +60,5 @@ class ScoreBoard:
         self.screen.blit(self.score_image, self.image_rect)
         self.screen.blit(self.image_high_score, self.high_score_image_rect)
         self.screen.blit(self.level_image, self.level_image_rect)
-        self.ships.draw(self.screen)
+        # self.ships.draw(self.screen)
     

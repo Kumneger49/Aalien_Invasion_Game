@@ -5,23 +5,27 @@ from settings import Setting
 from game_stats import GameStats
 from score_board import ScoreBoard
 from ship import Ship
-from bullet import Bullet
+from bullet import Bullet, AlienBullet, SpeciaBullet
 from alien import Alien
 from button import Button
+from random import randint
+
 
 class AlienInvasion:
     def __init__(self):
         pygame.init()
         self.a=0
         self.obj=Setting()
-        self.screen=pygame.display.set_mode((self.obj.width, self.obj.height))
+        self.screen=pygame.display.set_mode((0, 0), pygame.FULLSCREEN)
         self.obj.width = self.screen.get_rect().width
         self.obj.height = self.screen.get_rect().height
         pygame.display.set_caption('Alien Invasion')
         self.stats=GameStats(self)
         self.ship=Ship(self)
         self.bullets=pygame.sprite.Group()
+        self.alien_bullets=pygame.sprite.Group()
         self.aliens=pygame.sprite.Group()
+        self.special_bullets=pygame.sprite.Group()
         self._create_fleet()
         self.play_button=Button(self, 'Play')
         self.sb=ScoreBoard(self)
@@ -75,8 +79,17 @@ class AlienInvasion:
     
     def _fire_bullets(self):
         if self.obj.bullets_allowed>len(self.bullets):
-            self.bullet=Bullet(self)  
-            self.bullets.add(self.bullet)
+            num=randint(0, 3)
+            num_special=randint(0, 20)
+            if num==0:
+                alien_bullet=AlienBullet(self)
+                self.alien_bullets.add(alien_bullet)
+            if num_special==1:
+                special_bullet=SpeciaBullet(self)
+                self.special_bullets.add(special_bullet)
+            else:
+                bullet=Bullet(self)
+                self.bullets.add(bullet)
     
     def _check_mouse_button(self, mouse_pose):
         button_clicked=self.play_button.rect.collidepoint(mouse_pose)
@@ -88,7 +101,7 @@ class AlienInvasion:
             self.stats.game_active=True
             self.sb.prep_score()
             self.sb.prep_level()
-            self.sb.prep_ships  
+            self.sb.prep_ships() 
             self.bullets.empty()
             self.aliens.empty()
             self._create_fleet()
@@ -98,24 +111,38 @@ class AlienInvasion:
                   
     def _update_bullets(self):
         self.bullets.update()
+        self.alien_bullets.update()
+        self.special_bullets.update()
         for bullet in self.bullets.copy():
             if bullet.rect.bottom<=0:
                 self.bullets.remove(bullet)
+        for special_bullet in self.special_bullets.copy():
+            if special_bullet.rect.bottom<=0:
+                self.special_bullets.remove(special_bullet)
         self._check_bullet_alien_collisions()
         
     def _check_bullet_alien_collisions(self):
-        collisions=pygame.sprite.groupcollide(self.bullets, self.aliens, True, True)
-        if collisions:
-            for aliens in collisions.values():
+        noraml_collisions=pygame.sprite.groupcollide(self.bullets, self.aliens, True, True)
+        special_bullet_collision=pygame.sprite.groupcollide(self.special_bullets, self.aliens, True, True)
+        if noraml_collisions or special_bullet_collision:
+            for aliens in noraml_collisions.values() or special_bullet_collision.values():
                 self.stats.score+=self.obj.alien_points*len(aliens)
             self.sb.prep_score()
             self.sb.check_high_score()
         if not self.aliens:
             self.bullets.empty()  
+            self.alien_bullets.empty()
             self._create_fleet()  
             self.obj.speed_up()
             self.stats.level+=1
             self.sb.prep_level()
+            
+    def _check_alien_bullet_collision(self):
+        collisions=pygame.sprite.spritecollideany(self.ship, self.alien_bullets)
+        if collisions:
+            sleep(0.5)
+            self._ship_hit()
+            
             
     def _update_aliens(self):                  
         self._check_aliens() 
@@ -176,15 +203,24 @@ class AlienInvasion:
         alien.rect.y=alien.rect.height+2*alien.rect.height*row
         self.aliens.add(alien)
             
+    def _alien_bullets(self):
+       for alien_bullet in self.alien_bullets.sprites():
+            alien_bullet.draw_bullet()
+            self._check_alien_bullet_collision()
+            
     def _update_screen(self):
         self.screen.fill(self.obj.bg_color)
-        self.ship.blitme()
-        for bullet in self.bullets.sprites():
-            bullet.draw_bullet()
-        self.aliens.draw(self.screen)
-        self.sb.show_score()
         if not self.stats.game_active:
             self.play_button.draw_buttons()
+        if self.stats.game_active:
+            self.ship.blitme()
+            for bullet in self.bullets.sprites():
+                bullet.draw_bullet()
+            for special_bullet in self.special_bullets.sprites():
+                special_bullet.draw_special_bullet()
+            self._alien_bullets()
+            self.aliens.draw(self.screen)
+            self.sb.show_score()
         pygame.display.flip()
         
 if __name__=='__main__':
