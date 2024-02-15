@@ -7,7 +7,7 @@ class Ship(Sprite):
         self.screen=ai.screen
         self.obj=ai.obj
         self.screen_rect=ai.screen.get_rect()
-        self.image=pygame.image.load('C:\\Users\\User\\Desktop\\Python\\Alien_Invasion\\images\\Rocket-147466_1280-_1_.bmp')
+        self.image=pygame.image.load('images\\Rocket-147466_1280-_1_.bmp')
         self.rect=self.image.get_rect()
         self.rect.midbottom=self.screen_rect.midbottom
         self.x=float(self.rect.x)
